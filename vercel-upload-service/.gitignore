@@ -1,0 +1,13 @@
+# local env files
+.env*.local
+.env
+
+# dependencies
+/node_modules
+
+# production
+/build
+/output
+
+# ide
+/.idea
