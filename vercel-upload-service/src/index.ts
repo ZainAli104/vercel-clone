@@ -12,6 +12,9 @@ import { uploadFile } from "./aws";
 
 dotenv.config();
 
+const subscriber = createClient();
+subscriber.connect();
+
 const publisher = createClient();
 publisher.connect();
 
@@ -50,10 +53,19 @@ app.post("/deploy", async (req, res) => {
     }
 
     await publisher.lPush("build-queue", id);
+    await publisher.hSet("status", id, "uploaded");
 
     res.json({
         id: id
     });
+});
+
+app.get("/status", async (req, res) => {
+    const id = req.query.id;
+    const response = await subscriber.hGet("status", id as string);
+    res.json({
+        status: response
+    })
 });
 
 const startServer = async () => {

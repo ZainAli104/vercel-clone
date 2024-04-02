@@ -16,6 +16,7 @@ const config = {
 
 const app = express();
 
+// http://zh6ow.localhost:3001/index.html
 app.get("/*", async (req, res) => {
     const host = req.hostname;
 
