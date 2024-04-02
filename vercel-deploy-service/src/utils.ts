@@ -1,5 +1,5 @@
 import path from "path";
-import { exec, spawn } from "child_process";
+import { exec } from "child_process";
 
 /**
  * Builds a project by installing dependencies and running the build command.

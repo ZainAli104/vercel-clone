@@ -1,3 +1,4 @@
+const fs = require('fs').promises;
 import path from "path";
 import express from "express";
 import cors from "cors";
@@ -26,22 +27,29 @@ app.post("/deploy", async (req, res) => {
     const repoUrl = req.body.repoUrl;
     const id = generate();
 
+    const cloneDir = path.join(__dirname, `output/${id}`);
+
     try {
-        await simpleGit().clone(repoUrl, path.join(__dirname, `output/${id}`));
+        // Clone the repository
+        await simpleGit().clone(repoUrl, cloneDir);
+
+        // Remove the .git directory
+        await fs.rm(path.join(cloneDir, '.git'), { recursive: true, force: true });
     } catch (error) {
+        console.error(error);
         return res.status(500).json({
-            error: "Failed to clone repository"
+            error: "Failed to clone repository or remove .git directory"
         });
     }
 
-    const files = getAllFiles(path.join(__dirname, `output/${id}`));
+    const files = getAllFiles(cloneDir);
 
-    files.forEach(async file => {
+    for (const file of files) {
         const filePath = file.slice(__dirname.length + 1).replace(/\\/g, "/");
         await uploadFile(filePath, file);
-    })
+    }
 
-    publisher.lPush("build-queue", id);
+    await publisher.lPush("build-queue", id);
 
     res.json({
         id: id
